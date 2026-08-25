@@ -1,0 +1,7 @@
+.agents
+AGENTS.md
+.codex
+babylon.md
+/node_modules
+/dist
+/screenshots
