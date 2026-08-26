@@ -50,7 +50,7 @@ const matShieldPU = neonMat('puShield', '#ffff00')
   stars.material = matStar
   stars.isPickable = false
   const pm = new StandardMaterial('starfieldPM', scene)
-  pm.emissiveTexture = new Texture('/starfield.png', scene)
+  pm.emissiveTexture = new Texture('starfield.png', scene)
   stars.material = pm
 }
 
@@ -163,7 +163,7 @@ function buildShip() {
 
   // engine trail
   const trail = new ParticleSystem('trail', 300, scene)
-  trail.particleTexture = new Texture('/spark.png', scene)
+  trail.particleTexture = new Texture('spark.png', scene)
   trail.emitter = new Vector3(0, 0, 0)
   trail.minEmitBox = new Vector3(-0.3, 0, -1.4)
   trail.maxEmitBox = new Vector3(0.3, 0, -1.4)
@@ -242,7 +242,7 @@ function spawnRock() {
 
 function explode(pos: Vector3, hex: string) {
   const ps = new ParticleSystem('boom', 120, scene)
-  ps.particleTexture = new Texture('/spark.png', scene)
+  ps.particleTexture = new Texture('spark.png', scene)
   ps.emitter = pos.clone()
   ps.color1 = Color4.FromHexString(hex + 'FF')
   ps.color2 = Color4.FromHexString(hex + 'AA')
