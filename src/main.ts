@@ -71,6 +71,7 @@ let powerTimer = 10
 let tripleT = 0
 let shieldOn = false
 let shieldMesh: Mesh | null = null
+let invulnT = 0 // i-frames tras perder vida: la nave parpadea y no choca
 let best = Number(localStorage.getItem('neonvoid-best') ?? 0)
 
 const hudScore = document.querySelector('#hud .score')!
@@ -87,9 +88,18 @@ setHud()
 
 // ---------- audio (Web Audio synth) ----------
 let actx: AudioContext | null = null
+// iOS/Safari: el AudioContext debe crearse/resumirse DENTRO de un gesto del
+// usuario o queda "suspended" (juego mudo). Se llama desde keydown/touchstart.
+function unlockAudio() {
+  try {
+    actx ??= new AudioContext()
+    if (actx.state === 'suspended') void actx.resume()
+  } catch { /* audio unavailable */ }
+}
 function beep(type: OscillatorType, f0: number, f1: number, dur: number, vol = 0.12) {
   try {
     actx ??= new AudioContext()
+    if (actx.state === 'suspended') void actx.resume()
     const o = actx.createOscillator()
     const g = actx.createGain()
     o.type = type
@@ -135,14 +145,18 @@ function startGame() {
   score = 0
   lives = 3
   powerTimer = 8
+  keys.clear()
   if (!ship) buildShip()
   else { ship.setEnabled(true); ship.position.set(0, 0, -22) }
+  invulnT = 1.5
+  ship.visibility = 1
   overlay.classList.add('hidden')
   running = true
   setHud()
 }
 
 window.addEventListener('keydown', (e) => {
+  unlockAudio()
   if (!running) { startGame(); return }
   keys.add(e.code)
 })
@@ -157,6 +171,7 @@ const touchOrigin = { x: 0, y: 0 }
 const touchMove = { x: 0, y: 0 } // -1..1 analógico
 
 window.addEventListener('touchstart', (e) => {
+  unlockAudio()
   if (!running) { startGame(); e.preventDefault(); return }
   const t = e.changedTouches[0]
   touchId = t.identifier
@@ -371,6 +386,11 @@ scene.onBeforeRenderObservable.add(() => {
   }
   if (tripleT > 0) tripleT -= dt
   ship.material = tripleT > 0 ? matTriple : matShip
+  // i-frames: la nave parpadea y los impactos no cuentan
+  if (invulnT > 0) {
+    invulnT -= dt
+    ship.visibility = invulnT > 0 ? 0.35 + 0.65 * Math.abs(Math.sin(invulnT * 18)) : 1
+  }
   if (shieldMesh?.isEnabled()) {
     shieldMesh.position.copyFrom(ship.position)
     shieldMesh.rotation.y += 4 * dt
@@ -382,6 +402,7 @@ scene.onBeforeRenderObservable.add(() => {
     r.mesh.rotation.y += r.spin * dt
     r.mesh.rotation.x += r.spin * 0.4 * dt
     if (r.mesh.position.z < -40) { r.mesh.dispose(); rocks.splice(i, 1); continue }
+    if (invulnT > 0) continue // i-frames activos: la nave es intocable
     if (Vector3.Distance(r.mesh.position, ship.position) < r.mesh.getBoundingInfo().boundingSphere.radiusWorld + 1.2) {
       r.mesh.dispose(); rocks.splice(i, 1)
       if (shieldOn) {
@@ -393,10 +414,12 @@ scene.onBeforeRenderObservable.add(() => {
         explode(ship.position, '#00ffff')
         sfxBoom()
         lives--
+        invulnT = 2
         shakeT = 0.4
         setHud()
         if (lives <= 0) {
           running = false
+          ship.setEnabled(false)
           if (score > best) { best = score; localStorage.setItem('neonvoid-best', String(best)) }
           setHud()
           overlay.querySelector('p:last-child')!.textContent = `GAME OVER — ${score} pts · récord ${best} · toca o pulsa una tecla para reintentar`
@@ -420,3 +443,14 @@ scene.onBeforeRenderObservable.add(() => {
 
 engine.runRenderLoop(() => scene.render())
 window.addEventListener('resize', () => engine.resize())
+
+// Hook de QA para verificación programática (captures, colisiones, i-frames).
+;(globalThis as Record<string, unknown>).__nv = {
+  get scene() { return scene },
+  get ship() { return ship },
+  get rocks() { return rocks },
+  get running() { return running },
+  get lives() { return lives },
+  get invulnT() { return invulnT },
+  startGame,
+}
