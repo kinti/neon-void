@@ -2,6 +2,8 @@
 
 Arcade espacial 3D (estilo neón) construido con Babylon.js + Vite + TypeScript.
 
+**Juega: https://kinti.github.io/neon-void/** (GitHub Pages, redespliega en cada push a `main`)
+
 ## Estado
 
 - [x] Scaffold Vite + TS + `@babylonjs/core`
@@ -15,6 +17,7 @@ Arcade espacial 3D (estilo neón) construido con Babylon.js + Vite + TypeScript.
 - [x] Sonido sintetizado con Web Audio API (disparo, explosión, power-up, game over) — sin assets
 - [x] Récord persistente en localStorage (`neonvoid-best`)
 - [x] Verificado con captura headless y vídeo de prueba (`proof.mp4`)
+- [x] Publicado en GitHub Pages con deploy automático por Actions
 
 ## Pendiente
 
