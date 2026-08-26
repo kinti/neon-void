@@ -2,11 +2,11 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🛸%3C/text%3E%3C/svg%3E" />
     <title>NEON VOID</title>
     <style>
-      html, body { margin: 0; padding: 0; overflow: hidden; background: #000; height: 100%; width: 100%; }
+      html, body { margin: 0; padding: 0; overflow: hidden; background: #000; height: 100%; width: 100%; touch-action: none; }
       #game { display: block; width: 100vw; height: 100vh; }
       #hud {
         position: fixed; top: 16px; left: 20px; z-index: 10;
@@ -35,9 +35,9 @@
     </div>
     <div id="overlay">
       <h1>NEON VOID</h1>
-      <p>WASD / flechas — mover · ESPACIO — disparar</p>
+      <p>WASD / flechas — mover · ESPACIO — disparar · en móvil: arrastra (disparo automático)</p>
       <p>recoge cápsulas verdes (triple disparo) y amarillas (escudo)</p>
-      <p>pulsa cualquier tecla para empezar</p>
+      <p>toca la pantalla o pulsa cualquier tecla para empezar</p>
     </div>
     <canvas id="game"></canvas>
     <script type="module" src="/src/main.ts"></script>

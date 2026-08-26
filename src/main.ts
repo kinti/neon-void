@@ -150,6 +150,41 @@ window.addEventListener('keyup', (e) => keys.delete(e.code))
 
 const keys = new Set<string>()
 
+// ---------- táctil: arrastra para mover, autodisparo mientras tocas ----------
+const TOUCH_RADIO = 48 // px de arrastre para velocidad máxima
+let touchId: number | null = null
+const touchOrigin = { x: 0, y: 0 }
+const touchMove = { x: 0, y: 0 } // -1..1 analógico
+
+window.addEventListener('touchstart', (e) => {
+  if (!running) { startGame(); e.preventDefault(); return }
+  const t = e.changedTouches[0]
+  touchId = t.identifier
+  touchOrigin.x = t.clientX
+  touchOrigin.y = t.clientY
+}, { passive: false })
+
+window.addEventListener('touchmove', (e) => {
+  if (touchId === null) return
+  for (const t of e.changedTouches) {
+    if (t.identifier !== touchId) continue
+    touchMove.x = Math.max(-1, Math.min(1, (t.clientX - touchOrigin.x) / TOUCH_RADIO))
+    touchMove.y = Math.max(-1, Math.min(1, -(t.clientY - touchOrigin.y) / TOUCH_RADIO))
+  }
+  e.preventDefault()
+}, { passive: false })
+
+const touchEnd = (e: TouchEvent) => {
+  for (const t of e.changedTouches) {
+    if (t.identifier !== touchId) continue
+    touchId = null
+    touchMove.x = 0
+    touchMove.y = 0
+  }
+}
+window.addEventListener('touchend', touchEnd)
+window.addEventListener('touchcancel', touchEnd)
+
 // ---------- entities ----------
 function buildShip() {
   ship = MeshBuilder.CreateBox('ship', { width: 1.6, height: 0.5, depth: 2.6 }, scene)
@@ -263,9 +298,10 @@ scene.onBeforeRenderObservable.add(() => {
   const dt = Math.min(engine.getDeltaTime() / 1000, 0.05)
   if (!running || !ship) return
 
-  // movement
-  const vx = (keys.has('KeyD') || keys.has('ArrowRight') ? 1 : 0) - (keys.has('KeyA') || keys.has('ArrowLeft') ? 1 : 0)
-  const vy = (keys.has('KeyW') || keys.has('ArrowUp') ? 1 : 0) - (keys.has('KeyS') || keys.has('ArrowDown') ? 1 : 0)
+  // movement (teclado digital o arrastre táctil analógico)
+  let vx = (keys.has('KeyD') || keys.has('ArrowRight') ? 1 : 0) - (keys.has('KeyA') || keys.has('ArrowLeft') ? 1 : 0)
+  let vy = (keys.has('KeyW') || keys.has('ArrowUp') ? 1 : 0) - (keys.has('KeyS') || keys.has('ArrowDown') ? 1 : 0)
+  if (touchId !== null) { vx = touchMove.x; vy = touchMove.y }
   ship.position.x += vx * 24 * dt
   ship.position.y += vy * 18 * dt
   ship.position.x = Math.max(-17, Math.min(17, ship.position.x))
@@ -273,9 +309,9 @@ scene.onBeforeRenderObservable.add(() => {
   ship.rotation.z = -vx * 0.45
   ship.rotation.x = vy * 0.2
 
-  // fire
+  // fire (autodisparo mientras se toca)
   fireCooldown -= dt
-  if ((keys.has('Space')) && fireCooldown <= 0) {
+  if ((keys.has('Space') || touchId !== null) && fireCooldown <= 0) {
     fire()
     fireCooldown = 0.18
   }
@@ -363,7 +399,7 @@ scene.onBeforeRenderObservable.add(() => {
           running = false
           if (score > best) { best = score; localStorage.setItem('neonvoid-best', String(best)) }
           setHud()
-          overlay.querySelector('p:last-child')!.textContent = `GAME OVER — ${score} pts · récord ${best} · pulsa una tecla para reintentar`
+          overlay.querySelector('p:last-child')!.textContent = `GAME OVER — ${score} pts · récord ${best} · toca o pulsa una tecla para reintentar`
           overlay.classList.remove('hidden')
           sfxOver()
         }
