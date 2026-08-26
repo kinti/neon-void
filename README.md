@@ -16,6 +16,10 @@ Arcade espacial 3D (estilo neón) construido con Babylon.js + Vite + TypeScript.
 - [x] Power-ups: cápsula verde = triple disparo (8 s, nave en verde), cápsula amarilla = escudo (absorbe 1 impacto)
 - [x] Sonido sintetizado con Web Audio API (disparo, explosión, power-up, game over) — sin assets
 - [x] Récord persistente en localStorage (`neonvoid-best`)
+- [x] Móvil: control táctil por arrastre analógico + autodisparo; empezar/reintentar con toque
+- [x] Juego justo: 2 s de invulnerabilidad con parpadeo tras perder vida (1,5 s al arrancar)
+- [x] Audio desbloqueado en el gesto del usuario (iOS/Safari)
+- [x] Overlay y HUD responsive en pantallas pequeñas
 - [x] Verificado con captura headless y vídeo de prueba (`proof.mp4`)
 - [x] Publicado en GitHub Pages con deploy automático por Actions
 
